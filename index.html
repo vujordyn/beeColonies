@@ -41,15 +41,21 @@
     <div class="column">
         <div id="figure1" class="column">
             <div class="label">
-                <h3>Figure 1: Map of honey-producing bee colonies in the United States in 1998</h3>
-                <p>We want to see if the number of honey-producing bee colonies varies by state. This can be used to guide
-                    conservation efforts.</p>
+                <h3>Figure 1: Maps of honey-producing bee colonies in the United States in 1998 and 2012</h3>
+                <p>We want to see if the number of honey-producing bee colonies has chnaged over time,
+                    and if this number varies by state. This can be used to more efficiently direct conservation efforts.</p>
             </div>
             <svg id="choropleth" height="500" width="800" style="background-color: #ffffff;" >
 
             </svg>
             <svg id="colorLegend" height="60" width="600" style="background: #fff; margin-top:30px ma" >
       
+            </svg>
+            <svg id="choropleth2" height="500" width="800" style="background-color: #ffffff;" >
+
+            </svg>
+            <svg id="colorLegend2" height="60" width="600" style="background: #fff; margin-top:30px ma" >
+        
             </svg>
         </div>
 <hr/>
@@ -65,7 +71,7 @@
     </div>
     <script>
 
-// Map
+// Map 1998
 const svg = d3.select("svg#choropleth");
 const width = svg.attr("width");
 const height = svg.attr("height");
@@ -74,11 +80,18 @@ const mapWidth = width - margin.left - margin.right;
 const mapHeight = height - margin.top - margin.bottom;
 const map = svg.append("g")
                 .attr("transform","translate("+margin.left+","+margin.top+")");
+// Year label
+svg.append("text")
+    .attr("x", width/2)
+    .attr("y", margin.top+20)
+    .attr("text-anchor", "middle")
+    .style("font-size", "20px")
+    .style("font-family", "Montserrat, sans-serif")
+    .text("1998")
 
 const requestData = async function() {
     // US state hexagonal coordinates taken from https://team.carto.com/u/andrew/tables/andrew.us_states_hexgrid/public/map
     var states = await d3.json("us_states_hexgrid.geojson");
-    console.log(states);
     var statesMesh = topojson.mesh(states, states.features);
 
     var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], states);
@@ -113,8 +126,8 @@ const requestData = async function() {
     // Honey production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
     var honey = await d3.csv("honeyproduction.csv", d3.autoType);
     var honey1998 = honey.filter(d => d.year==1998);
-    var honey2012 = honey.filter(d => d.year==2012);
     console.log("honey", honey)
+    // Get data from year 1998 only
     console.log("1998", honey1998)
 
     // Set dictionary to color states
@@ -136,8 +149,66 @@ const requestData = async function() {
        .style("fill", d => colorScale( numColCounts[d.properties.iso3166_2]) );
     drawLegend("#colorLegend", colorScale);
 
+// Map 2012
+    const svg2 = d3.select("svg#choropleth2");
+    const width2 = svg2.attr("width");
+    const height2 = svg2.attr("height");
+    const margin2 = { top: 20, right: 20, bottom: 20, left:20};
+    const mapWidth2 = width2 - margin2.left - margin2.right;
+    const mapHeight2 = height2 - margin2.top - margin2.bottom;
+    const map2 = svg2.append("g")
+                    .attr("transform","translate("+margin2.left+","+margin2.top+")");
+// Year label
+    svg2.append("text")
+        .attr("x", width/2)
+        .attr("y", margin.top+20)
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .style("font-family", "Montserrat, sans-serif")
+        .text("2012")
+    
+// Create states
+    let statePaths2 = map2.selectAll("path.state").data(states.features)
+                        .join("path")
+                        .attr("class", "state")
+                        .attr("note", d => d.properties.iso3166_2)
+                        .attr("d", path)
+                        .attr("stroke-width", 2)
+                        .attr("stroke", "white")
+    
+    map.append("path").datum(statesMesh)
+        .attr("class", "outline")
+        .attr("d", path)
 
-    // Line graph
+    // Add state labels
+    map2.selectAll("labels").data(states.features)
+        .enter()
+            .append("text")
+            .attr("x", d => path.centroid(d)[0])
+            .attr("y", d => path.centroid(d)[1])
+            .text(d => d.properties.iso3166_2)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "central")
+            .style("font-size", 12)
+            .style("fill", "black")
+            .style("font-family", "Montserrat, sans-serif")
+    // Get data for year 2012 only
+    var honey2012 = honey.filter(d => d.year==2012);
+
+    // Set dictionary to color states
+    let numColCounts2 = {}
+    let stateNames2 = {}
+    honey2012.forEach( row => {
+        numColCounts2[row.state] = row.numcol;
+        stateNames2[row.state] = row.state;
+    })
+
+    // Color states and add legend
+    map2.selectAll(".state")
+       .style("fill", d => colorScale( numColCounts2[d.properties.iso3166_2]) );
+    drawLegend("#colorLegend2", colorScale);
+
+// Line graph
 const lineGraph = d3.select("svg#lineGraph");
 const lgWidth = lineGraph.attr("width");
 const lgHeight = lineGraph.attr("height");
