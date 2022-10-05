@@ -5,11 +5,12 @@
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
         <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <script src="drawLegend.js"></script>
         <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 
         <style>
             .state {
-                fill: #eba937;
+                fill: #a8a8a8;
             }
             .outline {
                 stroke: rgb(0, 0, 0);
@@ -47,8 +48,11 @@
             <svg id="choropleth" height="500" width="800" style="background-color: #ffffff;" >
 
             </svg>
+            <svg id="colorLegend" height="60" width="600" style="background: #fff; margin-top:30px ma" >
+      
+            </svg>
         </div>
-
+<hr/>
         <div id="figure 2" class="column">
             <div class="label">
                 <h3>Figure 2: Line graph of honey-producing bee colonies in New York from 1998 to 2012</h3>
@@ -58,10 +62,6 @@
 
             </svg>
         </div>
-
-        <svg id="colorLegend" height="100" width="600" style="background: #fff; margin-top:30px" >
-      
-        </svg>
     </div>
     <script>
 
@@ -77,39 +77,27 @@ const map = svg.append("g")
 
 const requestData = async function() {
     // US state hexagonal coordinates taken from https://team.carto.com/u/andrew/tables/andrew.us_states_hexgrid/public/map
-    var us = await d3.json("us_states_hexgrid.geojson");
-    console.log(us);
-    var states = us.features;
+    var states = await d3.json("us_states_hexgrid.geojson");
     console.log(states);
-    let statesMesh = topojson.mesh(us, states);
+    var statesMesh = topojson.mesh(states, states.features);
 
-    const projection = d3.geoMercator().fitSize([mapWidth, mapHeight], us);
-    const path = d3.geoPath().projection(projection);
+    var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], states);
+    var path = d3.geoPath().projection(projection);
 
-    // Honey production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
-    var honey = await d3.csv("honeyproduction.csv");
-    var honey1998 = honey.filter(d => d.year==1998);
-    var honey2012 = honey.filter(d => d.year==2012);
-    
-    const numExtent = d3.extent(honey, d => d['numcol']);
-    let colorScale = d3.scaleLinear().domain(numExtent)
-                                    .range([d3.rgb("#a008f2"), d3.rgb("#f9d6ec")])
-                                    .interpolate(d3.interpolateHcl);
-
-    map.selectAll("path.state").data(states)
-        .join("path")
-        .attr("class", "state")
-        .attr("note", d => d.id)
-        .attr("d", path)
-        .attr("stroke-width", 2)
-        .attr("stroke", "white")
+    let statePaths = map.selectAll("path.state").data(states.features)
+                        .join("path")
+                        .attr("class", "state")
+                        .attr("note", d => d.properties.iso3166_2)
+                        .attr("d", path)
+                        .attr("stroke-width", 2)
+                        .attr("stroke", "white")
     
     map.append("path").datum(statesMesh)
         .attr("class", "outline")
         .attr("d", path)
 
     // Add state labels
-    map.selectAll("labels").data(states)
+    map.selectAll("labels").data(states.features)
         .enter()
             .append("text")
             .attr("x", d => path.centroid(d)[0])
@@ -118,13 +106,36 @@ const requestData = async function() {
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "central")
             .style("font-size", 12)
-            .style("fill", "white")
+            .style("fill", "black")
             .style("font-family", "Montserrat, sans-serif")
-}
 
-requestData();
+    // Honey production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
+    var honey = await d3.csv("honeyproduction.csv", d3.autoType);
+    var honey1998 = honey.filter(d => d.year==1998);
+    var honey2012 = honey.filter(d => d.year==2012);
+    console.log("honey", honey)
+    console.log("1998", honey1998)
 
-// Line graph
+    let numColCounts = {}
+    let stateNames = {}
+    honey1998.forEach( row => {
+        numColCounts[row.state] = row.numcol;
+        stateNames[row.state] = row.state;
+    })
+    console.log(numColCounts)
+    
+    const minMax = d3.extent( Object.values(numColCounts) );
+    console.log(minMax);
+    const colorScale = d3.scaleQuantile()
+                    .domain(Object.values(numColCounts))
+                    .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
+
+    map.selectAll(".state")
+       .style("fill", d => colorScale( numColCounts[d.properties.iso3166_2]) );
+    drawLegend("#colorLegend", colorScale);
+
+
+    // Line graph
 const lineGraph = d3.select("svg#lineGraph");
 const lgWidth = lineGraph.attr("width");
 const lgHeight = lineGraph.attr("height");
@@ -137,16 +148,15 @@ let chartArea = lineGraph.append("g").attr("id","points")
                   .attr("transform",`translate(${lgMargin.left},${lgMargin.top})`);
 
 // Honey Production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
-d3.csv("honeyproduction.csv", d3.autoType).then( (data) => {
 
     // Create time parser for year
     const timeParser = d3.timeParse('%Y');
-    data.forEach( d => {
+    honey.forEach( d => {
         d['year'] = timeParser(d["year"]);
     });
 
     // Filter for NY state and create scales for number of colonies and year
-    const numColNY = data.filter(d => d.state=="NY")
+    const numColNY = honey.filter(d => d.state=="NY")
     const colExtent = d3.extent(numColNY, d => d["numcol"])
     const yearExtent = d3.extent(numColNY, d => d["year"])
     const colScale = d3.scaleLinear().domain(colExtent).range([chartHeight, 0])
@@ -223,7 +233,110 @@ d3.csv("honeyproduction.csv", d3.autoType).then( (data) => {
         .style("font-family", "Montserrat, sans-serif")
         .text("Number of Colonies")
 
-});
+}
+
+requestData();
+
+// // Line graph
+// const lineGraph = d3.select("svg#lineGraph");
+// const lgWidth = lineGraph.attr("width");
+// const lgHeight = lineGraph.attr("height");
+// const lgMargin = {top: 50, right: 15, bottom: 60, left: 80};
+// const chartWidth = lgWidth - lgMargin.left - lgMargin.right;
+// const chartHeight = lgHeight - lgMargin.top - lgMargin.bottom;
+
+// let annotations = lineGraph.append("g").attr("id","annotations");
+// let chartArea = lineGraph.append("g").attr("id","points")
+//                   .attr("transform",`translate(${lgMargin.left},${lgMargin.top})`);
+
+// // Honey Production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
+// d3.csv("honeyproduction.csv", d3.autoType).then( (data) => {
+
+//     // Create time parser for year
+//     const timeParser = d3.timeParse('%Y');
+//     data.forEach( d => {
+//         d['year'] = timeParser(d["year"]);
+//     });
+
+//     // Filter for NY state and create scales for number of colonies and year
+//     const numColNY = data.filter(d => d.state=="NY")
+//     const colExtent = d3.extent(numColNY, d => d["numcol"])
+//     const yearExtent = d3.extent(numColNY, d => d["year"])
+//     const colScale = d3.scaleLinear().domain(colExtent).range([chartHeight, 0])
+//     const yearScale = d3.scaleTime().domain(yearExtent).range([0, chartWidth])
+
+//     // create axes and gridlines
+//     let leftAxis = d3.axisLeft(colScale)
+//     let leftGridlines = d3.axisLeft(colScale)
+//                             .tickSize(-chartWidth-10)
+//                             .tickFormat("")
+//     annotations.append("g")
+//                 .attr("class", "y axis")
+//                 .attr("transform",`translate(${lgMargin.left-10},${lgMargin.top})`)
+//                 .call(leftAxis)
+//     annotations.append("g")
+//                 .attr("class", "y gridlines")
+//                 .attr("transform",`translate(${lgMargin.left-10},${lgMargin.top})`)
+//                 .call(leftGridlines);
+
+//     let bottomAxis = d3.axisBottom(yearScale)
+//     let bottomGridlines = d3.axisBottom(yearScale)
+//                             .tickSize(-chartHeight-10)
+//                             .tickFormat("")
+//     annotations.append("g")
+//         .attr("class", "x axis")
+//         .attr("transform",`translate(${lgMargin.left},${chartHeight+lgMargin.top+10})`)
+//         .call(bottomAxis);
+//     annotations.append("g")
+//         .attr("class", "x gridlines")
+//         .attr("transform",`translate(${lgMargin.left},${chartHeight+lgMargin.top+10})`)
+//         .call(bottomGridlines);
+
+//     // Create line and circles for points
+//     var lineGen = d3.line()
+//                   .x( d => yearScale(d['year']) )
+//                   .y( d => colScale(d['numcol']) )
+//                   .curve(d3.curveMonotoneX);
+//     chartArea.append("path")
+//            .datum(numColNY)
+//            .attr("class", "line")
+//            .attr("fill", "none")
+//            .attr("stroke", "#ffc64a")
+//            .attr("stroke-width", 3)
+//            .attr("d", lineGen);
+
+//     chartArea.selectAll("circle").data(numColNY)
+//            .join("circle")
+//            .attr("r", 5)
+//            .attr("fill", "#f58142")
+//            .attr("cx", d => yearScale(d['year']) )
+//            .attr("cy", d => colScale(d['numcol']) );
+    
+//     // Graph title and axis labels
+//     lineGraph.append("text")
+//         .attr("x", lgWidth/2)
+//         .attr("y", lgMargin.top-20)
+//         .attr("text-anchor", "middle")
+//         .style("font-size", "20px")
+//         .style("font-family", "Montserrat, sans-serif")
+//         .text("Number of Colonies in New York State Over Time")
+//     lineGraph.append("text")
+//         .attr("x", lgWidth/2)
+//         .attr("y", lgHeight-10)
+//         .attr("text-anchor", "middle")
+//         .style("font-size", "16px")
+//         .style("font-family", "Montserrat, sans-serif")
+//         .text("Year")
+//     lineGraph.append("text")
+//         .attr("transform", "rotate(-90)")
+//         .attr("x", -lgHeight/2)
+//         .attr("y", 15)
+//         .attr("text-anchor", "middle")
+//         .style("font-size", "16px")
+//         .style("font-family", "Montserrat, sans-serif")
+//         .text("Number of Colonies")
+
+//});
         </script>
 </body>
 </html>
