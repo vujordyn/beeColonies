@@ -162,9 +162,10 @@ const requestData = async function() {
         stateNames[row.state] = row.state;
     })
 
-    // Color states and add legend
+    // Color states
     map.selectAll(".state")
        .style("fill", d => colorScale3( numColCounts[d.properties.iso3166_2]) );
+    // Legend code source: Prof. Rz (drawLegend.js)
     drawLegend("#colorLegend", colorScale3);
 
 // Map 2012
@@ -221,7 +222,7 @@ const requestData = async function() {
         stateNames2[row.state] = row.state;
     })
     
-    // Color states and add legend
+    // Color states
     map2.selectAll(".state")
        .style("fill", d => colorScale3( numColCounts2[d.properties.iso3166_2]) );
 

@@ -28,22 +28,25 @@
 
 ## Contributions
 ### Collaboration
-Coded the map visualization (2.5 hours):
-
-- Jordyn Vu
-- Julie Jeong
-- Joanna Zhang
+- Coded the map visualization (~2.5 hours):
+  - Jordyn Vu (created initial hexagonal cartograms)
+  - Julie Jeong (created scales and mapped data to map)
+  - Joanna Zhang (added styling to maps)
   
-Coded the line graph visualization (1 hour):
+  *All three group members participated in the planning and coding stages of the map visualizations, though Joanna did pre-planning so the process would flow smoother*
 
-- Jordyn Vu
-- Julie Jeong
+- Coded the line graph visualization (~1.5 hour)
+  - Jordyn Vu
+  - Julie Jeong
 
 ### Individual
+*The project write-up was split amongst the three group members according to the outline below.*
+
 - Jordyn Vu
-  - Wrote the design rationale (20 minutes)
+  - Wrote the design overview/rationale (~20 minutes)
 - Julie Jeong
-  - Wrote the data description (20 minutes)
+  - Wrote the data description (~30 minutes)
 - Joanna Zhang
-  - Planned and sketched the visualizations to be coded (20 minutes)
-  - Wrote the story; researching and summarizing the project topic (45 minutes)
+  - Planned and sketched the visualizations to be coded (~20 minutes)
+  - Wrote the story; researching and summarizing the project topic (~45 minutes)
+
