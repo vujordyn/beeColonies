@@ -12,9 +12,13 @@
 
 ## Design Overview
 
-* For the map visualization: Marks were the hexagons representing states, which we made all the same size because we wanted them to only vary by our saturation channel, not by size, as some of the smaller states would be harder to see. The channel we chose was saturation, with states with more colonies being more saturated in color.
+### For the map visualization: 
+- To show change over time, we made two different maps following the same procedures.
+- Marks were the hexagons representing states, which we made all the same size because we wanted them to only vary by our saturation channel, not by size, as some of the smaller states would be harder to see in that case. A trade-off of the hexagon mark was that it displaced the states into odd positions, despite us using coordinates from a geoJSON file, making it potentially confusing for a viewer used to the traditional representation of the United States on a map. The way we addressed this was by labeling states by their acronyms.
+- The channel we chose was saturation, with states with less colonies (taken from the numcol column in our honeyproduction.csv file) being less saturated in color (pale yellow) and states with more colonies being more saturated (brown). States with no data were colored a neutral gray. We chose six different colors for the scale. A benefit of choosing six colors for the scale is that it would not overwhelm the viewer, while a flaw is that it failed to differentiate between states with large gaps in colonies. More specifically, the range for the densest group was 359,000 while the range for the less dense groups was less than 50,000. This is largely due to some outlier states having a large number of colonies.
 
-* For the line graph visualization: Marks were the circles representing years while channels included 
+### For the line graph visualization:
+- Marks were the circles representing years while channels included horizontal aligned position and vertical aligned position. We chose to make a line graph so the viewer could follow along the line to see how the number of bee colonies declined from 1998 to 2012, though there was an increase from 2001 to 2003. We curved the line to make the viewing experience more fluid.
 
 ***
 
@@ -23,15 +27,23 @@
 ***
 
 ## Contributions
-* Jordyn Vu
-  * Coded the map visualization
-  * Wrote the design rationale
-  * Estimated time contribution: 1.5 hours
-* Julie Jeong
-  * Coded the line graph visualization
-  * Wrote the data description
-  * Estimated time contribution: 1.5 hours
-* Joanna Zhang
-  * Planned and sketched the visualizations to be coded
-  * Wrote the story, summarizing the project
-  * Estimated time contribution: 1.5 hours
+### Collaboration
+Coded the map visualization (2.5 hours):
+
+- Jordyn Vu
+- Julie Jeong
+- Joanna Zhang
+  
+Coded the line graph visualization (1 hour):
+
+- Jordyn Vu
+- Julie Jeong
+
+### Individual
+- Jordyn Vu
+  - Wrote the design rationale (20 minutes)
+- Julie Jeong
+  - Wrote the data description (20 minutes)
+- Joanna Zhang
+  - Planned and sketched the visualizations to be coded (20 minutes)
+  - Wrote the story; researching and summarizing the project topic (45 minutes)
