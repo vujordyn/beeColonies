@@ -23,6 +23,11 @@
 ***
 
 ## Story
+From our two map visualizations in 1998 and 2012, we can see that both maps show that the west coast consistently has more honey-producing bee colonies than the east coast. In general, there has been a decrease in the number of honey-producing bee colonies across the US states with a couple of exceptions. The states that saw a dramatic decrease in bee colonies are: ME, VT, WI, NY, PA, NE, MO, VA, UT, NM, KS, AR, AZ, AL. The states that saw an increase in bee colonies are: ND, OH, NJ, NC, HI. It’s interesting to see that California was the predominant bee colony producer in 1998, and California, North Dakota, and South Dakota had the highest honey-producing bee colonies in 2012. 
+
+For our line graph for New York from 1998 to 2012, we can see an overall decrease in the number of honey-producing colonies. We found the dip in 2001 and the rise after 2010 to be interesting. We found out beekeeping became legalized in NY in 2010, which could have contributed to the increase in bee colonies after 2010. 
+
+These visualizations clearly show that environmental changes such as global warming are impacting the number of honey-producing bee colonies. With the increased burning of fossil fuels, our carbon footprint has dramatically increased throughout the years. According to the Milken Institute School of Public Health, as temperatures rise, pollen and nectar decrease in availability, which happens to be honeybees’ main source of nutrition. However, global warming is not the only factor causing the decline of bee colonies - habitat destruction, increased use of pesticides, and loss of natural abundance of flora and fauna are also contributing to the decline in bee colonies. A third of the world’s food production relies on pollination from bees, and bees also provide a source of income for many rural communities. Through our project, we hope to inform people and raise awareness about the bee colonies.  
 
 ***
 
