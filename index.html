@@ -29,9 +29,20 @@
                 flex-direction: column;
             }
             .label {
-                width: 800;
+                width: 1200;
                 background-color: rgb(255, 213, 124);
                 padding: 0 10 0 10;
+            }
+            .label2 {
+                width: 800;
+            }
+            .row{
+                display: flex;
+                flex-direction: row;
+            }
+            .container{
+                align-items: center;
+                justify-content: center;
             }
     
         </style>
@@ -39,28 +50,32 @@
     </head>
 <body>
     <div class="column">
-        <div id="figure1" class="column">
             <div class="label">
                 <h3>Figure 1: Maps of honey-producing bee colonies in the United States in 1998 and 2012</h3>
-                <p>We want to see if the number of honey-producing bee colonies has chnaged over time,
+                <p>We want to see if the number of honey-producing bee colonies has changed over time,
                     and if this number varies by state. This can be used to more efficiently direct conservation efforts.</p>
             </div>
-            <svg id="choropleth" height="500" width="800" style="background-color: #ffffff;" >
+            <div class="container">
+            <div class="row">
+                <div class="column">
+            <svg id="choropleth" height="400" width="600" style="background-color: #ffffff;" >
 
             </svg>
-            <svg id="colorLegend" height="60" width="600" style="background: #fff; margin-top:30px ma" >
-      
-            </svg>
-            <svg id="choropleth2" height="500" width="800" style="background-color: #ffffff;" >
 
-            </svg>
-            <svg id="colorLegend2" height="60" width="600" style="background: #fff; margin-top:30px ma" >
-        
-            </svg>
         </div>
-<hr/>
+            <svg id="choropleth2" height="400" width="600" style="background-color: #ffffff;" >
+
+            </svg>
+            </div>
+            <div style="width: 50%; margin:0 auto;">
+            <svg id="colorLegend" height="60" width="550" style="background: #fff; margin-top:30px ma" >
+                
+            </svg>
+            </div>
+    </div>
+<br/>
         <div id="figure 2" class="column">
-            <div class="label">
+            <div class="label label2">
                 <h3>Figure 2: Line graph of honey-producing bee colonies in New York from 1998 to 2012</h3>
                 <p>We want to see how the number of honey-producing bee colonies changed over time for the state of New York.</p>
             </div>
@@ -126,9 +141,20 @@ const requestData = async function() {
     // Honey production data taken from https://www.kaggle.com/datasets/jessicali9530/honey-production?resource=download
     var honey = await d3.csv("honeyproduction.csv", d3.autoType);
     var honey1998 = honey.filter(d => d.year==1998);
+
+    var honey1998_2012 = honey.filter(d => (d.year==1998 || d.year==2012));
+
     console.log("honey", honey)
     // Get data from year 1998 only
     console.log("1998", honey1998)
+
+    let numColCounts3 = []
+    honey1998_2012.forEach( row => {
+        numColCounts3.push(row.numcol);
+    })
+    // const colorScale3 = d3.scaleSequential(d3.interpolateYlOrBr)
+    //                     .domain(d3.extent(numColCounts3));
+    const colorScale3 = d3.scaleLog().domain(d3.extent(numColCounts3)).interpolate(d => d3.interpolateYlOrBr)
 
     // Set dictionary to color states
     let numColCounts = {}
@@ -138,16 +164,26 @@ const requestData = async function() {
         stateNames[row.state] = row.state;
     })
     console.log(numColCounts)
+
+    // honey1998_2012.forEach( row => {
+    //     numColCountsX[row.state] = row.numcol;
+    //     stateNamesX[row.state] = row.state;
+    // })
+    // console.log(numColCountsX)
     
     // Create color scale
-    const colorScale = d3.scaleQuantile()
-                    .domain(Object.values(numColCounts))
-                    .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
+    // const colorScale = d3.scaleQuantile()
+    //                 .domain(Object.values(numColCounts))
+    //                 .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
+
+    const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
+                    .domain(d3.extent(Object.values(numColCounts)));
+                    // .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
 
     // Color states and add legend
     map.selectAll(".state")
-       .style("fill", d => colorScale( numColCounts[d.properties.iso3166_2]) );
-    drawLegend("#colorLegend", colorScale);
+       .style("fill", d => colorScale3( numColCounts[d.properties.iso3166_2]) );
+    drawLegend("#colorLegend", colorScale3);
 
 // Map 2012
     const svg2 = d3.select("svg#choropleth2");
@@ -203,10 +239,14 @@ const requestData = async function() {
         stateNames2[row.state] = row.state;
     })
 
+
+    // const colorScale2 = d3.scaleSequential(d3.interpolateYlOrBr)
+    //                 .domain(d3.extent(Object.values(numColCounts2)));
+    
+
     // Color states and add legend
     map2.selectAll(".state")
-       .style("fill", d => colorScale( numColCounts2[d.properties.iso3166_2]) );
-    drawLegend("#colorLegend2", colorScale);
+       .style("fill", d => colorScale3( numColCounts2[d.properties.iso3166_2]) );
 
 // Line graph
 const lineGraph = d3.select("svg#lineGraph");
