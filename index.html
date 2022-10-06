@@ -148,13 +148,11 @@ const requestData = async function() {
     // Get data from year 1998 only
     console.log("1998", honey1998)
 
-    let numColCounts3 = []
+    let numColCountsAll = []
     honey1998_2012.forEach( row => {
-        numColCounts3.push(row.numcol);
+        numColCountsAll.push(row.numcol);
     })
-    // const colorScale3 = d3.scaleSequential(d3.interpolateYlOrBr)
-    //                     .domain(d3.extent(numColCounts3));
-    const colorScale3 = d3.scaleLog().domain(d3.extent(numColCounts3)).interpolate(d => d3.interpolateYlOrBr)
+    const colorScale3 = d3.scaleLog().domain(d3.extent(numColCountsAll)).interpolate(d => d3.interpolateYlOrBr)
 
     // Set dictionary to color states
     let numColCounts = {}
@@ -163,22 +161,6 @@ const requestData = async function() {
         numColCounts[row.state] = row.numcol;
         stateNames[row.state] = row.state;
     })
-    console.log(numColCounts)
-
-    // honey1998_2012.forEach( row => {
-    //     numColCountsX[row.state] = row.numcol;
-    //     stateNamesX[row.state] = row.state;
-    // })
-    // console.log(numColCountsX)
-    
-    // Create color scale
-    // const colorScale = d3.scaleQuantile()
-    //                 .domain(Object.values(numColCounts))
-    //                 .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
-
-    const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
-                    .domain(d3.extent(Object.values(numColCounts)));
-                    // .range(["#F9EBAB","#F3DE79","#EEBF3A","#E08701","#AA4C0B", "#773B13"]);
 
     // Color states and add legend
     map.selectAll(".state")
@@ -212,7 +194,7 @@ const requestData = async function() {
                         .attr("stroke-width", 2)
                         .attr("stroke", "white")
     
-    map.append("path").datum(statesMesh)
+    map2.append("path").datum(statesMesh)
         .attr("class", "outline")
         .attr("d", path)
 
@@ -238,12 +220,7 @@ const requestData = async function() {
         numColCounts2[row.state] = row.numcol;
         stateNames2[row.state] = row.state;
     })
-
-
-    // const colorScale2 = d3.scaleSequential(d3.interpolateYlOrBr)
-    //                 .domain(d3.extent(Object.values(numColCounts2)));
     
-
     // Color states and add legend
     map2.selectAll(".state")
        .style("fill", d => colorScale3( numColCounts2[d.properties.iso3166_2]) );
